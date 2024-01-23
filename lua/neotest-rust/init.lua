@@ -211,7 +211,7 @@ local query = [[
 (
   (attribute_item
     (attribute (identifier) @macro) (#eq? @macro "test_case")
-  ) @parameterization
+  )* @parameterization
   .
   (line_comment)*
   .
