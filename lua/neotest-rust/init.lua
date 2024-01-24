@@ -198,6 +198,28 @@ local query = [[
   (function_item name: (identifier) @test.name) @test.definition
 )
 
+;; Matches `#[{tokio,async_std}::test] async fn <test.name>()`
+(
+  (attribute_item
+    (attribute
+      (scoped_identifier
+        path: (identifier) @package
+        name: (identifier)
+      )
+    )
+    ;; all packages which provide a #[<package>::test] macro
+    (#any-of? @package "tokio" "async_std")
+  )
+  .
+  (line_comment)*
+  .
+  (function_item
+    (function_modifiers) @modifier
+    name: (identifier) @test.name
+  ) @test.definition
+  (#eq? @modifier "async")
+)
+
 ;; Matches `#[test_case(...)] fn <test.name>()`
 (
   (attribute_item (attribute (identifier) @parameterization) (#eq? @parameterization "test_case"))
@@ -211,7 +233,7 @@ local query = [[
 (
   (attribute_item
     (attribute (identifier) @macro) (#eq? @macro "test_case")
-  )* @parameterization
+  ) @parameterization
   .
   (line_comment)*
   .
@@ -251,6 +273,7 @@ local query = [[
     (#any-of? @parameterization "from" "with" "case" "values" "files" "future")
   ) @test.definition
 )
+
 ]]
 
 -- Given a `file_path` with its content as `source` and the `nodes` captured by tree-sitter
